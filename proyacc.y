@@ -111,7 +111,8 @@ id: ID {$$ = mknode(yytext,NULL,NULL); };
    
 DEF: INT ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=0; j++; };
  | DOUBLE ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=1; j++; };
- | CHAR ID ';‘ ; { strcpy(id_arr[i],$2); i++; type_arr[j]=2; j++; };
+ | CHAR ID ';' ; { strcpy(id_arr[i],$2); i++; type_arr[j]=2; j++; };
+ | BOOLEAN ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=3; j++; };
  
 
 
