@@ -109,10 +109,12 @@ exp: exp EQUAL exp {$$= mknode ("==",$1,$3);}
 id: ID {$$ = mknode(yytext,NULL,NULL); };
    //| NULLL;
    
-DEF: INT ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=0; j++; };
- | DOUBLE ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=1; j++; };
- | CHAR ID ';' ; { strcpy(id_arr[i],$2); i++; type_arr[j]=2; j++; };
- | BOOLEAN ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=3; j++; };
+DEF: INT ID ';' { strcpy(id_arr[i],$2); i++; type_arr[i]=0; i++; };
+ | DOUBLE ID ';' { strcpy(id_arr[i],$2); i++; type_arr[i]=1; i++; };
+ | CHAR ID ';' ; { strcpy(id_arr[i],$2); i++; type_arr[i]=2; i++; };
+ | BOOLEAN ID ';' { strcpy(id_arr[i],$2); i++; type_arr[i]=3; i++; };
+ 
+PROC ID ( ) { 
  
 
 
