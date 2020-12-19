@@ -14,8 +14,9 @@ typedef struct Stack {
 	int* array;
 }Stack;
 struct linkList { 
-    int data; 
-    struct linkList* next; 
+    char id[]; // name of var 
+    struct linkList* next;
+	struct linkList* head; //dont lose your head 
 }; 
 struct Stack* createStack(unsigned capacity)
 {
@@ -34,6 +35,7 @@ void push(struct Stack* stack, int item);
 int pop(struct Stack* stack);
 int peek(struct Stack* stack);
 void buildLink (node* tree);
+linkList makeList(char* id,linkList , prev);
 #define YYSTYPE struct node*
 %}
 /*
@@ -301,4 +303,18 @@ int yyerror(char *err) {
     return 0;
 
 }
-
+linkList makeList(char* id,linkList , prev){
+	struct *linkList newList = (linkList*)malloc(sizeof(linkList));
+	char *newstr = (char*)malloc(sizeof(id) + 1);
+	strcpy(newstr,id);
+	newList->id = newstr;
+	newList->next = NULL;
+	if (prev == NULL){
+		newList->head = newList;
+	}
+	else{
+		prev->next = newList;
+		newList->head = prev->head;
+	}
+	return newList;
+}
