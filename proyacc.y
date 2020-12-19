@@ -16,7 +16,8 @@ typedef struct Stack {
 struct linkList { 
     char id[]; // name of var 
     struct linkList* next;
-	struct linkList* head; //dont lose your head 
+	struct linkList* head; //almog dont lose our head!
+	int type; 
 }; 
 struct Stack* createStack(unsigned capacity)
 {
@@ -36,6 +37,7 @@ int pop(struct Stack* stack);
 int peek(struct Stack* stack);
 void buildLink (node* tree);
 linkList makeList(char* id,linkList , prev);
+int getType(char *token);
 #define YYSTYPE struct node*
 %}
 /*
@@ -317,4 +319,24 @@ linkList makeList(char* id,linkList , prev){
 		newList->head = prev->head;
 	}
 	return newList;
+}
+
+int getType(char *token){
+	// cant do switch case because c not support str .
+	if (strcmp(token,"INT")==0)
+		return 0;
+	else if (strcmp(token,"REAL")==0)
+		return 1;
+	else if (strcmp(token,"CHAR")==0)
+		return 2;
+	else if (strcmp(token,"BOOL")==0)
+		return 3;
+	else if (strcmp(token,"INT_P")==0)
+		return 4;
+	else if (strcmp(token,"REAL_P")==0)
+		return 5;
+	else if (strcmp(token,"CHAR_P")==0)
+		return 6;
+	else if (strcmp(token,"STRING")==0)
+		return 7;
 }
