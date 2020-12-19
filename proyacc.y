@@ -13,8 +13,8 @@ typedef struct Stack {
 	unsigned capacity;
 	int* array;
 }Stack;
-struct linkList { 
-    char id[]; // name of var 
+typedef struct linkList { 
+    char* id; // name of var 
     struct linkList* next;
 	struct linkList* head; //almog dont lose our head!
 	int type; 
@@ -27,7 +27,10 @@ struct Stack* createStack(unsigned capacity)
 	stack->array = (int*)malloc(stack->capacity * sizeof(int));
 	return stack;
 }
+// var def
 node *mknode(char *token, node *left, node *right);
+struct linkList* = NULL;
+// func def
 void printtree(node *tree,int i);
 void printtree(node *tree, int i);
 int isFull(struct Stack* stack);
@@ -36,8 +39,9 @@ void push(struct Stack* stack, int item);
 int pop(struct Stack* stack);
 int peek(struct Stack* stack);
 void buildLink (node* tree);
-linkList makeList(char* id,linkList , prev);
+struct linkList makeList(char* id,struct linkList prev);
 int getType(char *token);
+void test(struct linkList lst); 
 #define YYSTYPE struct node*
 %}
 /*
@@ -305,12 +309,13 @@ int yyerror(char *err) {
     return 0;
 
 }
-linkList makeList(char* id,linkList , prev){
+linkList makeList(char* id,char* token,struct linkList* prev){
 	struct *linkList newList = (linkList*)malloc(sizeof(linkList));
 	char *newstr = (char*)malloc(sizeof(id) + 1);
 	strcpy(newstr,id);
 	newList->id = newstr;
 	newList->next = NULL;
+	newList->type = getType(token);
 	if (prev == NULL){
 		newList->head = newList;
 	}
