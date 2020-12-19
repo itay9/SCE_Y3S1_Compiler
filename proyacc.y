@@ -136,11 +136,14 @@ exp: exp EQUAL exp {$$= mknode ("==",$1,$3);}
  
 id: ID {$$ = mknode(yytext,NULL,NULL); };
    //| NULLL;
+
+ 
 exp_list: exp COMMA exp_list {$$=mknode("S",$1,mknode(",",$3,NULL));}
 	| exp {$$=mknode("S",$1,NULL);}
 	| {$$=NULL;};
 par_exp: LBRACKET exp_list RBRACKET {$$=$2;};
 call_function: id par_exp {$$=mknode("FUNCTION CALL", mknode($1,NULL,NULL),mknode("ARGS",$2,NULL));};
+
 
 
 %%
