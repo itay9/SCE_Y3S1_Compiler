@@ -92,7 +92,7 @@ Body: Proc_Func Declares Statements {$$= mknode ("BODY",mknode("S",$1,NULL),mkno
 
 Declares: Declares Declare {$$= mknode ("S",$1,$2);}
 		|{$$=NULL;};
-Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);lst = makeList($2,$4,lst};
+Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);lst = makeList($2,$4,lst);};
 Statements: Statements Statement {$$= mknode ("S",$1,$2);}
 			|{$$=NULL;};
 Statement: IF LBRACKET exp RBRACKET ST_Block {$$ = mknode("IF",mknode("(",$3,mknode(")",NULL,NULL)),$5);}
