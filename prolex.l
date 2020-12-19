@@ -49,14 +49,14 @@
 "[" {return LSQRBR;}
 "]" {return RSQRBR;}
 
-[1-9][0-9]* {yylval.s = atoi(yytext); return NUM;}
-[a-zA-Z][_a-zA-Z0-9]* { yylval.s = strdup(yytext); return ID;}
-"\""[^"]*"\"" {yylval.s = strdup(yytext);return STRING_LTL;}
-\'.\' {yylval.s = strdup(yytext);return CHAR_LTL;}
-0(x|X)[0-9A-F]+ {yylval.s= strdup(yytext);return HEX_LTL;}
-[-+]?[0-9]*[\.]?[0-9]*[eE]?[-+]?[0-9]+ {yylval.s= strdup(yytext);return REAL_LTL;}
+[1-9][0-9]*|0 {yylval=atoi(yytext); return NUM;}
+[a-zA-Z][_a-zA-Z0-9]* { yylval = strdup(yytext); return ID;}
+"\""[^"]*"\"" {yylval= strdup(yytext);return STRING_LTL;}
+\'.\' {yylval= strdup(yytext);return CHAR_LTL;}
+0(x|X)[0-9A-F]+ {yylval= strdup(yytext);return HEX_LTL;}
+[-+]?[0-9]*[\.]?[0-9]*[eE]?[-+]?[0-9]+ {yylval= strdup(yytext);return REAL_LTL;}
 [\n] {yylineno++;}
-[ /t] printf(" "); 
+[ /t]+ printf(" "); 
 . return yytext[0];
 
 %%

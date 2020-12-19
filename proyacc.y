@@ -1,8 +1,3 @@
-%union {
-int number;
-char* string;
-node* tree;
-}
 %{
 #include<stdio.h>
 #include<string.h>
@@ -13,60 +8,88 @@ typedef struct node
  struct node *left;
  struct node *right;
 } node;
+typedef struct Stack {
+	int top;
+	unsigned capacity;
+	int* array;
+}Stack;
+struct linkList { 
+    int data; 
+    struct linkList* next; 
+}; 
+struct Stack* createStack(unsigned capacity)
+{
+	struct Stack* stack = (struct Stack*)malloc(sizeof(struct Stack));
+	stack->capacity = capacity;
+	stack->top = -1;
+	stack->array = (int*)malloc(stack->capacity * sizeof(int));
+	return stack;
+}
 node *mknode(char *token, node *left, node *right);
 void printtree(node *tree,int i);
 void printtree(node *tree, int i);
-
-char id_arr[10][10],id[10];
-int type_arr[10],i = 0, j = 0, k = 0;
-int flag = 0, first_type = 0;
-
+int isFull(struct Stack* stack);
+int isEmpty(struct Stack* stack);
+void push(struct Stack* stack, int item);
+int pop(struct Stack* stack);
+int peek(struct Stack* stack);
+void buildLink (node* tree);
+#define YYSTYPE struct node*
 %}
-%token <string> ID
+/*
+%union {
+int number;
+char* string;
+node* tree;
+}
+*/
+//%token <string> ID
 %token INT REAL NUM BOOL CHAR STRING INT_P REAL_P CHAR_P IF ELSE WHILE VAR FUNC PROC RETURN NULLL AND DIV ASSIGN EQUAL BIGGER BIGGEREQ SMALLER SMALLEREQ MINUS NOT NOTEQ OR PLUS MULTIPLY REFERENCE POWER BOOLFALSE BOOLTRUE SEMICOLON COLON COMMA PIPE LBRACE RBRACE LBRACKET RBRACKET LSQRBR RSQRBR ID STRING_LTL CHAR_LTL HEX_LTL REAL_LTL
-%type <tree> Program Proc_Func Funct s exp//Proce exp Param Param_list Var_id Type
+//%type <tree> Program Proc_Func Funct s exp//Proce exp Param Param_list Var_id Type
 %left PLUS MINUS RETURN
 %left MULTIPLY DIV
 %left EQUAL NOTEQ OR AND BIGGER BIGGEREQ SMALLER SMALLEREQ
 %left SEMICOLON
 %%
-s: Program { printf("OK\n"); print(); test(); };
+s: Program { printf("OK\n"); printtree($1,1); };
 Program: Proc_Func {$$ = mknode("CODE",$1,NULL); };
-Proc_Func: Proc_Func Funct {$$ = mknode("",$1,$2); }
-		  | Proc_Func Proce {$$ = mknode("",$1,$2); }
+Proc_Func: Proc_Func Funct {$$ = mknode("S",$1,$2); }
+		  | Proc_Func Proce {$$ = mknode("S",$1,$2); }
 		  | Funct {$$ =$1;}// mknode("",$1,NULL); }
-		  | Statement {$$ = mknode("",$1,NULL); }
-		  | Proce {$$ = mknode("",$1,NULL); }
+		  | Statement {$$ = mknode("S",$1,NULL); }
+		  | Proce {$$ = mknode("S",$1,NULL); }
 		  |{$$=NULL;};
-Funct: FUNC id LBRACKET Param RBRACKET RETURN Type LBRACE Body RBRACE {$$ = mknode("FUNC",mknode("",mknode("",$2,NULL),mknode("ARGS",$4,mknode("RETURN",$7,NULL))),mknode("",$9,NULL)); };
-Proce: PROC id LBRACKET Param RBRACKET LBRACE Body RBRACE {$$ = mknode("PROC",mknode("",mknode("",$2,NULL),mknode("ARGS",$4,mknode("",$7,NULL))),NULL); };
-Param: Param_list {$$ = mknode("",$1,NULL); }
+//placement: id ASSIGN placement
+Funct: FUNC id LBRACKET Param RBRACKET RETURN Type LBRACE Body RBRACE {$$ = mknode("FUNC",$2,mknode("ARGS",mknode("S",$4,$7),mknode("S",$9,NULL))); };
+Proce: PROC id LBRACKET Param RBRACKET LBRACE Body RBRACE {$$ = mknode("PROC",$2,mknode("ARGS",$4,$7));};
+Param: Param_list {$$ = $1;}//mknode("S",$1,NULL); }
 	|{$$ =NULL;};
 	 
-Param_list: Var_id COLON Type {$$ = mknode("",$3,mknode("",$1,mknode(")",NULL,NULL))); }
-		  | Param_list SEMICOLON Param_list {$$ = mknode("",$1,mknode("",$3,NULL)); };
-Var_id: id COMMA Var_id {$$ = mknode("",mknode("",$1,NULL),$3); }
-	  | id {$$ = mknode(yytext,NULL,NULL); };
+Param_list: Var_id COLON Type {$$ = mknode("S",$3,mknode("S",$1,mknode("S",NULL,NULL))); }
+		  | Param_list SEMICOLON Param_list {$$ = mknode("S",$1,mknode("S",$3,NULL)); };
+Var_id: id COMMA Var_id {$$ = mknode("S",mknode("S",$1,NULL),$3); }
+	  | id ;//{$$ = mknode(yytext,NULL,NULL); };
 Type: BOOL {$$ = mknode("BOOLEAN",NULL,NULL); }
 	| CHAR {$$ = mknode("CHAR",NULL,NULL); }
 	| INT {$$ = mknode("INT",NULL,NULL); }
 	| REAL {$$ = mknode("REAL",NULL,NULL); }
 	| INT_P {$$ = mknode("INT_P",NULL,NULL); }
 	| REAL_P {$$ = mknode("REAL_P",NULL,NULL); }
-	| CHAR_P {$$ = mknode("CHAR_P",NULL,NULL); };
+	| CHAR_P {$$ = mknode("CHAR_P",NULL,NULL); }
+	| STRING LSQRBR NUM RSQRBR {$$ = mknode("STRING",NULL,NULL); };
 
-Body: Proc_Func Declares Statements {$$= mknode ("BODY",mknode("",$1,NULL),mknode("",$2,mknode("",$3,mknode("",NULL,NULL))));};
+Body: Proc_Func Declares Statements {$$= mknode ("BODY",mknode("S",$1,NULL),mknode("S",$2,mknode("S",$3,mknode("S",NULL,NULL))));};
 
 
-Declares: Declares Declare {$$= mknode ("",$1,$2);}
+Declares: Declares Declare {$$= mknode ("S",$1,$2);}
 		|{$$=NULL;};
 Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);};
-Statements: Statements Statement {$$= mknode ("",$1,$2);}
+Statements: Statements Statement {$$= mknode ("S",$1,$2);}
 			|{$$=NULL;};
 Statement: IF LBRACKET exp RBRACKET ST_Block {$$ = mknode("IF",mknode("(",$3,mknode(")",NULL,NULL)),$5);}
-		 | IF LBRACKET exp RBRACKET ST_Block ELSE ST_Block {$$=mknode("IF ELSE", mknode("",$3,mknode("",NULL,NULL)),mknode("",$5,mknode("",$7,NULL)));}
+		 | IF LBRACKET exp RBRACKET ST_Block ELSE ST_Block {$$=mknode("IF ELSE", mknode("S",$3,mknode("S",NULL,NULL)),mknode("S",$5,mknode("S",$7,NULL)));}
 		 | WHILE LBRACKET exp RBRACKET ST_Block {$$=mknode("WHILE",mknode("(",$3,mknode(")",NULL,NULL)),$5);}
-		 | ST_Assign SEMICOLON {$$=mknode("",$1,NULL);}
+		 | ST_Assign SEMICOLON {$$=mknode("S",$1,NULL);}
 		 | exp SEMICOLON {$$=$1;}
 		 | RETURN exp SEMICOLON {$$=mknode("RETURN",$2,NULL);}
 		 | NEW_Block {$$=$1;};
@@ -76,15 +99,15 @@ ST_Block: Statement {$$=$1;}
 		| Declare {$$=$1;}
 		| Proce {$$=$1;}
 		| Funct {$$=$1;}
-		| SEMICOLON {$$=mknode("",NULL,NULL);};
+		| SEMICOLON {$$=mknode("S",NULL,NULL);};
 		
 
-NEW_Block: LBRACE Proc_Func Declares Statements RBRACE {$$= mknode ("{",$2,mknode("",$3,mknode("",$4,("}",NULL,NULL))));};
+NEW_Block: LBRACE Proc_Func Declares Statements RBRACE {$$= mknode ("{",$2,mknode("S",$3,mknode("S",$4,("}",NULL,NULL))));};
 	
 ST_Assign: Ll ASSIGN exp {$$= mknode("=",$1,$3);};
 
-Ll: id LSQRBR exp RSQRBR
-  | id {$$ = mknode("",$1,NULL); }
+Ll: id LSQRBR exp RSQRBR {$$=mknode($1,mknode("[",$3,mknode("]",NULL,NULL)),NULL);}
+  | id {$$ = mknode("S",$1,NULL); }
   | ;
 
 exp: exp EQUAL exp {$$= mknode ("==",$1,$3);}
@@ -100,28 +123,31 @@ exp: exp EQUAL exp {$$= mknode ("==",$1,$3);}
    | exp MULTIPLY exp {$$= mknode ("*",$1,$3);}
    | exp DIV exp {$$= mknode ("/",$1,$3);}
    | NOT exp {$$= mknode ("!",$2,NULL);}
+   | LBRACKET exp RBRACKET {$$= mknode ("(",$2,mknode(")",NULL,NULL));}
    | BOOLTRUE {$$= mknode ("",mknode("BOOLEAN",$1,NULL),NULL);}
    | BOOLFALSE {$$= mknode ("",mknode("BOOLEAN",$1,NULL),NULL);}
-   | exp DEF | DEF;
    |id {$$ = mknode("",$1,NULL); }
+   |STRING_LTL {$$= mknode ($1,mknode("STRING",NULL,NULL),NULL);}
    |CHAR_LTL {$$= mknode ($1,mknode("CHAR",NULL,NULL),NULL);}
-   | NUM {$$ = mknode(yytext,NULL,NULL); };
+   |HEX_LTL {$$= mknode ($1,mknode("HEX",NULL,NULL),NULL);}
+   |REAL_LTL {$$= mknode ($1,mknode("REAL",NULL,NULL),NULL);}
+   | NUM {$$ = mknode(yytext,NULL,NULL); }
+   | call_function {$$=$1;};
+ 
 id: ID {$$ = mknode(yytext,NULL,NULL); };
    //| NULLL;
-   
-DEF: INT ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=0; j++; };
- | DOUBLE ID ';' { strcpy(id_arr[i],$2); i++; type_arr[j]=1; j++; };
- | CHAR ID ';‘ ; { strcpy(id_arr[i],$2); i++; type_arr[j]=2; j++; };
- 
+exp_list: exp COMMA exp_list {$$=mknode("S",$1,mknode(",",$3,NULL));}
+	| exp {$$=mknode("S",$1,NULL);}
+	| {$$=NULL;};
+par_exp: LBRACKET exp_list RBRACKET {$$=$2;};
+call_function: id par_exp {$$=mknode("FUNCTION CALL", mknode($1,NULL,NULL),mknode("ARGS",$2,NULL));};
 
 
 %%
 #include "lex.yy.c"
 main()
 {
-	printf("ENTER ID NAME :\n ");
-	scanf("%s\n ",id);
-	return yyparse();
+ return yyparse();
 }
 
 node *mknode(char *token,node *left,node *right)
@@ -134,22 +160,133 @@ node *mknode(char *token,node *left,node *right)
  newnode->token = newstr;
  return newnode;
 }
-
-void printtree(node *tree, int i){
 /*
-	char temp[5] = {'s','k','i','p','\0'};
-	if (strcmp(tree->token,temp)){
-		skip(); 
+void printtree (node *tree, int tab){
+	if (tree->token==NULL){
+		return;
 	}
-*/	 int j=0;
- 	for(j=0;j<i;j++)
-     	printf("   ");
-	printf("%s\n", tree->token);
- 	if(tree->left)
-  		printtree(tree->left, i+1);
- 	if(tree->right)
-  	printtree(tree->right, i-1);
+	else{ 
+		if (tree->token[0]=='S'){
+			printf("\n");
+			tab++;
+			}
+		else {
+			//tab++;
+			//printTabs(tab);
+			printf(tree->token);
+			//tab--;
+			}
+		if(tree->left){
+			if (tree->token[0]=='S'){
+				tab++;
+			}
+			printTabs(tab);
+			printtree(tree->left,tab);
+		}
+		if(tree->right){
+			if (tree->token[0]=='S'){
+				tab++;
+			}
+			printTabs(tab);
+			printtree(tree->right,tab);
+		}
+	}
 }
+	*/	
+		
+//BEST PRINTER:
+void printtree (node *tree, int tab){
+    int nextTab = tab;
+    if (strlen(tree->token) > 0) {
+	if(tree->token[0]!='S'){
+        	printTabs(tab);
+        	printf ("%s", tree->token);
+	}
+	else { 
+		printf("\033[F");
+		nextTab--;
+		}
+        if (tree->left != NULL) {
+            printf("\n");
+        }
+    }
+    if (tree->left) {
+        if (strlen(tree->token) == 2) {
+            nextTab--;
+        }
+        printtree(tree->left, nextTab + 1);
+        if (strlen(tree->token) > 2) {
+            printTabs(nextTab-1);
+        }
+    }
+    if (strlen(tree->token) > 2) {
+        printf (")\n");
+    }
+    if (tree->right) {
+        printtree (tree->right, tab);
+    }
+}
+
+void printTabs(int numOfTabs) {
+    int i;
+    for (i = 0; i < numOfTabs; i++) {
+        printf ("\t");
+    }
+}
+/*
+void printtree(node *tree, int i)
+{
+ int j;
+ for(j=1;j<i;j++)
+     printf("   ");
+ if (tree->token[0]!='S'){
+ 	printf("%s/n", tree->token);
+	}
+ else { printf("\n");}
+ if (tree->token[0]!='A'){
+	printf("(")
+	}
+ if(tree->left)
+	printtree(tree->left, i+1);
+	//printf("\n");
+ if(tree->right)
+  printtree(tree->right, i-1);
+}
+*/
+//FUNCTION FOR STACK:
+int isFull(struct Stack* stack)
+{
+	return stack->top == stack->capacity - 1;
+}
+
+int isEmpty(struct Stack* stack)
+{
+	return stack->top == -1;
+}
+void push(struct Stack* stack, int item)
+{
+	if (isFull(stack))
+		return;
+	stack->array[++stack->top] = item;
+	printf("%d pushed to stack\n", item);
+}
+
+int pop(struct Stack* stack)
+{
+	if (isEmpty(stack))
+		return NULL;
+	return stack->array[stack->top--];
+}
+
+// Function to return the top from stack without removing it
+int peek(struct Stack* stack)
+{
+	if (isEmpty(stack))
+		return NULL;
+	return stack->array[stack->top];
+}
+
+
 void skip(){
      printf("   ");
 }
@@ -161,36 +298,4 @@ int yyerror(char *err) {
     return 0;
 
 }
-
-void print()
-{
- for(k=0;k<i;k++)
- {
- printf("%d ",type_arr[k]);
- printf("%s\n",id_arr[k]);
- }
-}
-
-void test()
-{
-for(k=0;k<i;k++)
-{
- if(strcmp(id_arr[k],id)==0)
- {
- if(flag==0)
- {
- flag=1;
- first_type=type_arr[k];
- }
- else
- {
- if(first_type==type_arr[k])
- printf("DECLARATION ERROR %s\n",id);
- else
- printf("REDECLARATION %s\n",id);
- }
- }
- }
-}
-
 
