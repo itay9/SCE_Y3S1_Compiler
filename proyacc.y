@@ -30,6 +30,7 @@ struct Stack* createStack(unsigned capacity)
 // var def
 node *mknode(char *token, node *left, node *right);
 struct linkList* = NULL;
+
 // func def
 void printtree(node *tree,int i);
 void printtree(node *tree, int i);
@@ -39,7 +40,7 @@ void push(struct Stack* stack, int item);
 int pop(struct Stack* stack);
 int peek(struct Stack* stack);
 void buildLink (node* tree);
-struct linkList makeList(char* id,struct linkList prev);
+linkList makeList(char* id,char* token,struct linkList* prev){
 int getType(char *token);
 void test(struct linkList lst); 
 #define YYSTYPE struct node*
@@ -91,7 +92,7 @@ Body: Proc_Func Declares Statements {$$= mknode ("BODY",mknode("S",$1,NULL),mkno
 
 Declares: Declares Declare {$$= mknode ("S",$1,$2);}
 		|{$$=NULL;};
-Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);};
+Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);lst = makeList($2,$4,lst};
 Statements: Statements Statement {$$= mknode ("S",$1,$2);}
 			|{$$=NULL;};
 Statement: IF LBRACKET exp RBRACKET ST_Block {$$ = mknode("IF",mknode("(",$3,mknode(")",NULL,NULL)),$5);}
