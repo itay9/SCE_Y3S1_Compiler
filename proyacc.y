@@ -2,6 +2,8 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#define false 0
+#define true 1
 typedef struct node
 {
  char *token;
@@ -15,10 +17,12 @@ typedef struct Stack {
 }Stack;
 typedef struct linkList { 
     char* id; // name of var 
+	char* data;
     struct linkList* next;
 	struct linkList* head; //almog dont lose our head!
 	int type; 
-}; 
+}linkList;
+
 struct Stack* createStack(unsigned capacity)
 {
 	struct Stack* stack = (struct Stack*)malloc(sizeof(struct Stack));
@@ -40,9 +44,10 @@ void push(struct Stack* stack, int item);
 int pop(struct Stack* stack);
 int peek(struct Stack* stack);
 void buildLink (node* tree);
-linkList makeList(char* id,char* token,struct linkList* prev){
+void makeList(char* id,char* token,struct linkList* prev)
+void setListVal(char* val);
 int getType(char *token);
-void test(struct linkList lst); 
+void test(); 
 #define YYSTYPE struct node*
 %}
 /*
@@ -92,7 +97,7 @@ Body: Proc_Func Declares Statements {$$= mknode ("BODY",mknode("S",$1,NULL),mkno
 
 Declares: Declares Declare {$$= mknode ("S",$1,$2);}
 		|{$$=NULL;};
-Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);lst = makeList($2,$4,lst);};
+Declare: VAR Var_id COLON Type SEMICOLON {$$= mknode ("VAR",$2,$4);makeList($2,$4,lst);};
 Statements: Statements Statement {$$= mknode ("S",$1,$2);}
 			|{$$=NULL;};
 Statement: IF LBRACKET exp RBRACKET ST_Block {$$ = mknode("IF",mknode("(",$3,mknode(")",NULL,NULL)),$5);}
@@ -310,7 +315,7 @@ int yyerror(char *err) {
     return 0;
 
 }
-linkList makeList(char* id,char* token,struct linkList* prev){
+void makeList(char* id,char* token,struct linkList* prev){
 	struct *linkList newList = (linkList*)malloc(sizeof(linkList));
 	char *newstr = (char*)malloc(sizeof(id) + 1);
 	strcpy(newstr,id);
@@ -321,10 +326,10 @@ linkList makeList(char* id,char* token,struct linkList* prev){
 		newList->head = newList;
 	}
 	else{
-		prev->next = newList;
-		newList->head = prev->head;
+		lst->next = newList;
+		newList->head = lst->head;
 	}
-	return newList;
+	lst = newList;
 }
 
 int getType(char *token){
@@ -345,4 +350,8 @@ int getType(char *token){
 		return 6;
 	else if (strcmp(token,"STRING")==0)
 		return 7;
+}
+
+void setListVal(char* val){
+	strcpy(lst->data,val);
 }
