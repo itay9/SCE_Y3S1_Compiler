@@ -31,7 +31,9 @@ struct args* IDArr[100];
 struct args* funcArr[50];
 struct args* array[200];
 struct args* arrayEx[200];
+char* returnFuncType[50];
 int countIDArr=0;
+int countArgInFunc=0;
 int countFuncArr=0;
 int count4Arr=0;
 int count4ArrEx=0;
@@ -95,8 +97,10 @@ Proc_Func: Proc_Func Funct {}
 		  | Statement {}
 		  | Proce {}
 		  |{};
-Funct: FUNC ID LBRACKET Param RBRACKET RETURN Type LBRACE{scope++;} Body RBRACE { 
-//printf("pParammm-> %s\n",$4);
+Funct: FUNC ID LBRACKET Param RBRACKET RETURN Type{strcpy(returnFuncType,$7);} LBRACE{scope++;} Body RBRACE { 
+//strcpy(returnFuncType,$7);
+
+countArgInFunc=0;
 createfuncRow($2,$7);
 funcArr[countFuncArr]=creatArgs(scope,$2);
 countFuncArr++;
@@ -126,10 +130,12 @@ Param: Param_list {}
 Param_list: Var_id COLON Type {createArgsRow($1,$3,&argCount); printf ("paramlist->%s\n",$1);}
 		  | Param_list SEMICOLON Param_list { };
 Var_id: ID COMMA Var_id {$$=strcat(strcat($1,","),$3);
+			countArgInFunc++;
 			IDArr[countIDArr]=creatArgs(scope,$1);
 			countIDArr++;}
 	  | ID {IDArr[countIDArr]=creatArgs(scope,$1);
 		countIDArr++;
+		countArgInFunc++;
 		$$=$1;};
 Type: BOOL {arrayEx[count4ArrEx]=creatArgs(scope,"bool");count4ArrEx++;
 $$="bool";}
@@ -150,7 +156,8 @@ Body:Proc_Func Declares Statements {};
 Declares: Declares Declare {}
 		|{};
 Declare: VAR Var_id COLON Type SEMICOLON{createRow($2,$4); 
-arrayEx[count4ArrEx]=creatArgs(scope,"var");count4ArrEx++;
+arrayEx[count4ArrEx]=creatArgs(scope,"var");
+count4ArrEx++;
  };//printf("type--->%s\n",$4);};
 Statements: Statements Statement {}
 			|{};
@@ -167,7 +174,19 @@ Statement: IF LBRACKET exp RBRACKET ST_Block {if (strcmp($3,"bool")!=0){
 								}}
 		 | ST_Assign SEMICOLON {$$=$1;}
 		 | exp SEMICOLON {$$=$1;}
-		 | RETURN exp SEMICOLON {}
+		 | RETURN exp SEMICOLON {char* temp[30];
+						strcpy(temp,"var ");
+						strcat(temp,$2);
+						for(int i=0;i<count4Arr;i++){
+						
+							printf("temp1->%s\n",temp);
+						
+							if(strstr(array[i]->data,temp)!=NULL){
+								if (strcmp(array[i]->type,returnFuncType)!=0){
+									printf("The Function need to return %s but you return %s\n",returnFuncType,array[i]->type);
+								}
+							}
+					 	}};
 		 | NEW_Block {$$=$1;};
 
 
@@ -240,8 +259,8 @@ arrayEx[count4ArrEx]=creatArgs(scope,"<"); count4ArrEx++;$$= "bool";}
 id: ID {$$ = $1;array[count4Arr]=creatArgs(scope,$1);count4Arr++;
 arrayEx[count4ArrEx]=creatArgs(scope,$1);count4ArrEx++; checkVarExist($1, IDArr, countIDArr);};
    //| NULLL;
-exp_list: exp COMMA exp_list {}
-	| exp {}
+exp_list: exp COMMA exp_list {countArgInFunc--;}
+	| exp {countArgInFunc--;}
 	| ;
 add_exps: REFERENCE add_exps{}
 	 | add_exp {};
@@ -253,7 +272,8 @@ d_exp:    DEREFERENCE id {}
 	| DEREFERENCE LBRACKET exp RBRACKET {}
 	| DEREFERENCE id LSQRBR exp RSQRBR {};
 par_exp: LBRACKET exp_list RBRACKET {};
-call_function: id par_exp {};
+call_function: id par_exp {if (countArgInFunc!=0){
+				printf("The Args in this func->%s dont mach!",$1); };};
 
 
 %%
@@ -341,7 +361,9 @@ int k=0,l=0;
 //printf("NUMBER ARGS\n");
 (*argCount)++;
 //printf(" THIS IS TEMP: %s \n" , temp);
-array[count4Arr]=creatArgs(scope,temp); count4Arr++;
+array[count4Arr]=creatArgs(scope,temp); 
+array[count4Arr]->type=y;
+count4Arr++;
 	}
 else {
 	(*argCount)++;
@@ -449,7 +471,9 @@ int k=0,l=0;
 					}
 					temp[k]='\0';
 //printf(" THIS IS TEMP: %s \n" , temp);
-array[count4Arr]=creatArgs(scope,temp); count4Arr++;
+array[count4Arr]=creatArgs(scope,temp); 
+array[count4Arr]->type=y;
+count4Arr++;
 	}
 else {
 	char* token=strtok(x,",");
@@ -554,6 +578,7 @@ void printArr(args* arr[], int x){
 		printf("Num of Struct in Array: %d \n", i);
 		printf("Contains the following data: \n");
 		printf("The data is: %s\n" , arr[i]->data);
+		printf("The type is: %s\n" , arr[i]->type);
 		printf("The number of scope is: %d\n",arr[i]->scope);
 		printf("\n");
 	}
